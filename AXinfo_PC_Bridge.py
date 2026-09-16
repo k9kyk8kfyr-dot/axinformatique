@@ -9,6 +9,16 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 
+# Bundled offline QR generator
+try:
+    from qrcode_lib import QRCode
+    from qrcode_lib.constants import ERROR_CORRECT_H
+    from qrcode_lib.image.svg import SvgImage
+except Exception:
+    QRCode = None
+    ERROR_CORRECT_H = 2
+    SvgImage = None
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PORT = 8765
 TOKEN_FILE = os.path.join(ROOT, "axinfo_pc_token.txt")
@@ -98,6 +108,33 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
+
+        if path == "/qr.svg":
+            pair_url = "http://" + local_ip() + ":" + str(PORT) + "/index.html?pair=" + TOKEN
+            if QRCode is None or SvgImage is None:
+                self.send_response(503)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(b"QR generator unavailable")
+                return
+            try:
+                qr = QRCode(version=None, error_correction=ERROR_CORRECT_H, box_size=8, border=4, image_factory=SvgImage)
+                qr.add_data(pair_url)
+                qr.make(fit=True)
+                svg = qr.make_image().to_string(encoding="unicode")
+                svg = svg.replace(">", "><rect width=\"100%\" height=\"100%\" fill=\"white\"/>", 1)
+                raw = svg.encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "image/svg+xml; charset=utf-8")
+                self.send_header("Content-Length", str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+            except Exception as exc:
+                self.send_response(500)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(("QR error: " + str(exc)).encode("utf-8"))
+            return
 
         if path == "/api/pairinfo":
             # Pairing information is intentionally available only on the local bridge page.

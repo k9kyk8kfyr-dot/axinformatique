@@ -41,75 +41,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 @media(max-width:430px){.kpis{grid-template-columns:1fr}.top-select{display:none}.content{padding-left:10px;padding-right:10px;padding-bottom:calc(90px + env(safe-area-inset-bottom))}.topbar{height:62px}.top-title{font-size:15px}.welcome h1{font-size:23px}.panel-head{align-items:flex-start;flex-direction:column}.search{max-width:none;width:100%}.modal{padding:0;align-items:end}.modal-card{width:100%;max-height:92vh;border-radius:22px 22px 0 0;padding:18px 14px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.modal-actions{position:sticky;bottom:0;background:#101a2b;padding-top:10px}.btn{min-height:44px}.input,.select,.textarea{font-size:16px}.sidebar{width:min(88vw,330px)}.quick{grid-template-columns:1fr 1fr}}
 @media(max-width:360px){.quick{grid-template-columns:1fr}.top-actions .btn{padding:8px 10px}}
 
-/* AXinfo Dynamic Device Layout */
-:root{--safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px)}
-html{scroll-behavior:smooth}
-body{padding-bottom:var(--safe-bottom)}
-.login{min-height:calc(100vh - var(--safe-top) - var(--safe-bottom));padding-top:calc(25px + var(--safe-top));padding-bottom:calc(25px + var(--safe-bottom))}
-.main{min-width:0}
-.content{width:100%;max-width:1650px;margin-inline:auto}
-.panel,.kpi,.welcome,.layout2,.chart-wrap,.table-wrap{min-width:0}
-.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.table{min-width:620px}
-.input,.select,.textarea{font-size:16px;min-height:44px}
-.btn{min-height:44px}
-.menu{min-width:44px;min-height:44px}
-.nav-btn{min-height:46px}
-.topbar{padding-top:var(--safe-top);min-height:calc(72px + var(--safe-top))}
-.top-actions{flex-wrap:wrap}
-@media (max-width: 900px){
-  .sidebar{width:235px}
-  .content{padding:18px 16px calc(24px + var(--safe-bottom))}
-  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .layout2{grid-template-columns:1fr}
-  .form-grid{grid-template-columns:1fr 1fr}
-}
-@media (max-width: 600px){
-  .app{min-height:100vh}
-  .sidebar{width:min(86vw,320px);z-index:300}
-  .main{width:100%;min-width:0}
-  .topbar{padding-inline:12px;gap:8px}
-  .top-left{min-width:0}
-  .top-title{font-size:16px}
-  .top-caption{font-size:10px}
-  .top-actions .btn-secondary{display:none}
-  .top-select{max-width:115px}
-  .avatar{display:none}
-  .content{padding:14px 12px calc(20px + var(--safe-bottom))}
-  .welcome{gap:12px;align-items:flex-start}
-  .welcome h1{font-size:21px;line-height:1.25}
-  .welcome p{font-size:11px}
-  .actions{width:100%;display:flex;flex-wrap:wrap;gap:8px}
-  .actions .btn{flex:1 1 140px}
-  .kpis{grid-template-columns:1fr 1fr;gap:9px}
-  .kpi{padding:12px}
-  .kpi .num{font-size:20px}
-  .layout2,.form-grid{grid-template-columns:1fr}
-  .panel-head{gap:8px;flex-wrap:wrap}
-  .panel-body{overflow:hidden}
-  .chart-wrap{overflow-x:auto}
-  .table-wrap{margin-inline:-2px}
-  .table{font-size:12px;min-width:560px}
-  .modal{padding:12px}
-  .modal-card{width:min(100%,560px);max-height:calc(100vh - 24px);overflow:auto;padding-bottom:calc(12px + var(--safe-bottom))}
-}
-@media (max-width: 380px){
-  .kpis{grid-template-columns:1fr}
-  .top-select{max-width:100px;font-size:12px}
-  .content{padding-inline:9px}
-  .welcome h1{font-size:19px}
-  .btn{padding-inline:11px}
-}
-@media (orientation: landscape) and (max-height: 600px) and (max-width: 900px){
-  .login{align-items:flex-start}
-  .login-card{margin-top:10px}
-  .sidebar{overflow-y:auto}
-  .modal-card{max-height:calc(100vh - 20px)}
-}
-@media (pointer:coarse){
-  button,.btn,.nav-btn,.menu,select,input{touch-action:manipulation}
-}
-
+/* AXinfo v18 responsive/device tuning */
+html{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+body{-webkit-overflow-scrolling:touch} .content,.main,.panel,.kpi{min-width:0}
+@media (orientation:landscape) and (max-width:900px){.topbar{height:58px}.content{padding-top:12px}.kpis{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:repeat(4,1fr)}}
+@media (min-width:1400px){.content{padding-left:32px;padding-right:32px}.kpi-value{font-size:28px}}
+.pc-bridge{margin-top:14px}.pc-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pc-dot{width:9px;height:9px;border-radius:50%;background:#64748b;display:inline-block}.pc-dot.ok{background:#22c55e}.pc-dot.err{background:#ef4444}.pc-actions{display:flex;gap:8px;flex-wrap:wrap}.pc-actions .btn{flex:1;min-width:150px}
 </style>
 </head>
 <body>
@@ -142,7 +79,7 @@ body{padding-bottom:var(--safe-bottom)}
     <div class="section-label">SYSTEM</div>
     <button class="nav-btn" data-page="users"><span class="nav-icon">♙</span><span>المستخدمون</span></button>
     <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span>الإعدادات</span></button>
-    <div class="side-bottom"><div class="muted" style="font-size:10px">AXinfo Ultimate v17.1</div><div class="muted" style="font-size:9px;margin-top:3px">All-in-one local edition</div></div>
+    <div class="side-bottom"><div class="muted" style="font-size:10px">AXinfo Ultimate v17</div><div class="muted" style="font-size:9px;margin-top:3px">All-in-one local edition</div></div>
   </aside>
 
   <div class="main">
@@ -472,68 +409,44 @@ function users(c){
  c.innerHTML+='<div class="panel"><div class="panel-body table-wrap"><table class="table"><tr><th>اسم المستخدم</th><th>الدور</th><th>إجراء</th></tr>'+s+'</table></div></div>';
  document.getElementById("addHead").onclick=addUser;bindDeleteButtons()
 }
-
-function pcCfg(){
- var u=safeGet("axinfo_pc_url")||"",t=safeGet("axinfo_pc_token")||"";
- return {url:u.replace(/\/+$/,""),token:t};
+function bridgeConfig(){
+ try{return JSON.parse(safeGet("axinfo_v18_bridge")||"{}")}catch(e){return {}}
 }
-function pcSetStatus(text,ok){
- var st=document.getElementById("pcStatus"),inf=document.getElementById("pcInfo");
- if(st){st.innerHTML=text;st.style.color=ok?"#22c55e":"#ef4444"}
- if(inf)inf.innerHTML=text;
+function saveBridgeConfig(url,token){safeSet("axinfo_v18_bridge",JSON.stringify({url:String(url||"").replace(/\/$/,""),token:String(token||"")}))}
+function bridgeUrl(){var c=bridgeConfig();return c.url||""}
+function openPCBridge(mode){
+ var c=bridgeConfig();
+ if(!c.url||!c.token){toast("أدخل عنوان الكمبيوتر ورمز الربط أولاً");return}
+ var target=c.url+"/bridge.html#token="+encodeURIComponent(c.token)+"&mode="+encodeURIComponent(mode||"push");
+ var w=window.open(target,"AXinfoPCBridge","width=520,height=760");
+ if(!w){toast("اسمح بفتح النوافذ المنبثقة ثم حاول مرة أخرى");return}
+ var tries=0;
+ var timer=window.setInterval(function(){tries++;try{w.postMessage({type:"AXINFO_READY",mode:mode||"push",token:c.token,data:(mode==="pull"?null:db)},"*")}catch(e){} if(tries>30)window.clearInterval(timer)},300);
+ window.setTimeout(function(){window.clearInterval(timer)},10000);
 }
-function pcRequest(method,body){
- var cfg=pcCfg();
- if(!cfg.url){pcSetStatus("أدخل عنوان الحاسوب أولاً",false);return Promise.reject(new Error("no url"))}
- var opt={method:method,headers:{"Content-Type":"application/json","X-AXinfo-Token":cfg.token||""}};
- if(body!==undefined)opt.body=JSON.stringify(body);
- return fetch(cfg.url+"/api/data",opt).then(function(r){
-   if(!r.ok)throw new Error("HTTP "+r.status);
-   return r.json();
+function bindBridgeMessage(){
+ window.addEventListener("message",function(ev){
+  var d=ev.data||{};if(!d||d.type!=="AXINFO_DATA")return;
+  var c=bridgeConfig();if(d.token!==c.token)return;
+  if(d.data&&typeof d.data==="object"){
+   db=d.data;normalizeDB();save();render();toast("تمت مزامنة بيانات الكمبيوتر مع الهاتف ✓");
+  }
  });
 }
-function pcTest(){
- var u=document.getElementById("pcUrl"),t=document.getElementById("pcToken");
- if(u)safeSet("axinfo_pc_url",String(u.value||"").trim());
- if(t)safeSet("axinfo_pc_token",String(t.value||""));
- var cfg=pcCfg();
- if(!cfg.url){pcSetStatus("أدخل عنوان الحاسوب",false);return}
- fetch(cfg.url+"/api/ping",{headers:{"X-AXinfo-Token":cfg.token||""}}).then(function(r){
-   if(!r.ok)throw new Error("HTTP "+r.status);
-   return r.json();
- }).then(function(x){pcSetStatus("متصل بالحاسوب ✓ "+(x.name||"AXinfo PC Server"),true)})
- .catch(function(){pcSetStatus("تعذر الاتصال. تأكد من نفس Wi‑Fi ومن عنوان الحاسوب والرمز.",false)});
-}
-function pcPush(){
- var u=document.getElementById("pcUrl"),t=document.getElementById("pcToken");
- if(u)safeSet("axinfo_pc_url",String(u.value||"").trim());
- if(t)safeSet("axinfo_pc_token",String(t.value||""));
- pcRequest("PUT",{db:db,updatedAt:new Date().toISOString()}).then(function(){pcSetStatus("تم إرسال بيانات الهاتف إلى الحاسوب ✓",true)})
- .catch(function(){pcSetStatus("فشل الإرسال. اختبر الاتصال أولاً.",false)});
-}
-function pcPull(){
- var u=document.getElementById("pcUrl"),t=document.getElementById("pcToken");
- if(u)safeSet("axinfo_pc_url",String(u.value||"").trim());
- if(t)safeSet("axinfo_pc_token",String(t.value||""));
- pcRequest("GET").then(function(x){
-   if(!x||!x.db){throw new Error("invalid")}
-   if(!window.confirm("سيتم استبدال بيانات الهاتف بآخر نسخة محفوظة على الحاسوب. متابعة؟"))return;
-   db=x.db;normalizeDB();save();render();pcSetStatus("تم جلب البيانات من الحاسوب ✓",true);
- }).catch(function(){pcSetStatus("فشل الجلب. تأكد من الاتصال ووجود نسخة على الحاسوب.",false)});
-}
-
 function settings(c){
+ var bc=bridgeConfig();
  c.innerHTML=header("الإعدادات","الحساب والعملة والنسخ الاحتياطي","نسخ احتياطي","backupBtn");
- c.innerHTML+='<div class="panel pc-sync-panel" style="margin-top:14px"><div class="panel-head"><h3>🔗 ربط الهاتف بالحاسوب</h3><span class="muted" id="pcStatus">غير متصل</span></div><div class="panel-body"><p class="muted">يمكنك تشغيل AXinfo على الحاسوب ومزامنة بيانات المتجر عبر الشبكة المحلية. أدخل عنوان الحاسوب ثم اختبر الاتصال.</p><div class="form-grid"><div class="field"><label>عنوان الحاسوب</label><input id="pcUrl" class="input" placeholder="مثال: http://192.168.1.20:8765"></div><div class="field"><label>رمز الربط</label><input id="pcToken" class="input" type="password" placeholder="الرمز الموجود في PC Server"></div></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-secondary" id="pcTest">اختبار الاتصال</button><button type="button" class="btn btn-primary" id="pcPush">إرسال بيانات الهاتف إلى PC</button><button type="button" class="btn btn-secondary" id="pcPull">جلب آخر نسخة من PC</button></div><div id="pcInfo" class="muted" style="margin-top:10px;font-size:12px"></div></div></div><div class="layout2"><div class="panel"><div class="panel-head"><h3>بيانات الدخول</h3></div><div class="panel-body"><div class="field"><label>اسم المستخدم الجديد</label><input id="nu" class="input"></div><div class="field"><label>كلمة المرور الجديدة</label><input id="np" class="input" type="password"></div><button class="btn btn-primary" id="saveCred">حفظ التغييرات</button></div></div><div class="panel"><div class="panel-head"><h3>العملة</h3></div><div class="panel-body"><div class="field"><label>رمز العملة</label><input id="currency" class="input" value="'+esc(db.currency)+'"></div><button class="btn btn-primary" id="saveCur">حفظ العملة</button></div></div></div><div class="panel" style="margin-top:14px"><div class="panel-head"><h3>النسخ والاسترجاع</h3></div><div class="panel-body"><input type="file" id="restoreFile" accept=".json"><br><br><button class="btn btn-secondary" id="restoreBtn">استرجاع</button> <button class="btn btn-danger" id="clearBtn">مسح كل البيانات</button></div></div>';
+ c.innerHTML+='<div class="layout2"><div class="panel"><div class="panel-head"><h3>بيانات الدخول</h3></div><div class="panel-body"><div class="field"><label>اسم المستخدم الجديد</label><input id="nu" class="input"></div><div class="field"><label>كلمة المرور الجديدة</label><input id="np" class="input" type="password"></div><button class="btn btn-primary" id="saveCred">حفظ التغييرات</button></div></div><div class="panel"><div class="panel-head"><h3>العملة</h3></div><div class="panel-body"><div class="field"><label>رمز العملة</label><input id="currency" class="input" value="'+esc(db.currency)+'"></div><button class="btn btn-primary" id="saveCur">حفظ العملة</button></div></div></div>';
+ c.innerHTML+='<div class="panel pc-bridge"><div class="panel-head"><h3>🔗 ربط الهاتف مع الكمبيوتر</h3><span class="muted">Wi‑Fi محلي</span></div><div class="panel-body"><p class="muted" style="font-size:11px">شغّل AXinfo PC Bridge على الكمبيوتر، ثم ضع العنوان والرمز هنا. الهاتف والكمبيوتر لازم يكونا على نفس Wi‑Fi.</p><div class="form-grid"><div class="field"><label>عنوان الكمبيوتر</label><input id="pcUrl" class="input" placeholder="http://192.168.1.20:8765" value="'+esc(bc.url||"")+'"></div><div class="field"><label>رمز الربط</label><input id="pcToken" class="input" type="password" placeholder="الرمز من الكمبيوتر" value="'+esc(bc.token||"")+'"></div></div><div class="pc-status"><span id="pcDot" class="pc-dot"></span><span id="pcState" class="muted">غير متصل</span></div><div class="pc-actions" style="margin-top:10px"><button type="button" class="btn btn-secondary" id="pcSave">حفظ الاتصال</button><button type="button" class="btn btn-primary" id="pcPush">📤 إرسال الهاتف → PC</button><button type="button" class="btn btn-success" id="pcPull">📥 جلب PC → الهاتف</button></div></div></div>';
+ c.innerHTML+='<div class="panel" style="margin-top:14px"><div class="panel-head"><h3>النسخ والاسترجاع</h3></div><div class="panel-body"><input type="file" id="restoreFile" accept=".json"><br><br><button class="btn btn-secondary" id="restoreBtn">استرجاع</button> <button class="btn btn-danger" id="clearBtn">مسح كل البيانات</button></div></div>';
  document.getElementById("backupBtn").onclick=backup;
  document.getElementById("saveCred").onclick=function(){var u=document.getElementById("nu").value,p=document.getElementById("np").value;if(!u||!p){toast("أدخل اسم المستخدم وكلمة المرور");return}cred={u:u,p:p};safeSet(CREDKEY,JSON.stringify(cred));toast("تم تغيير بيانات الدخول ✓")};
  document.getElementById("saveCur").onclick=function(){db.currency=document.getElementById("currency").value||"DZD";save();render();toast("تم حفظ العملة ✓")};
  document.getElementById("restoreBtn").onclick=restore;
  document.getElementById("clearBtn").onclick=function(){if(window.confirm("سيتم حذف بيانات AXinfo المحلية. هل تريد المتابعة؟")){db=defaults();save();render();toast("تم المسح")}};
- var cfg=pcCfg(),pu=document.getElementById("pcUrl"),pt=document.getElementById("pcToken");
- if(pu)pu.value=cfg.url;if(pt)pt.value=cfg.token;
- var pb=document.getElementById("pcTest"),pp=document.getElementById("pcPush"),pg=document.getElementById("pcPull");
- if(pb)pb.onclick=pcTest;if(pp)pp.onclick=pcPush;if(pg)pg.onclick=pcPull;
+ document.getElementById("pcSave").onclick=function(){var u=document.getElementById("pcUrl").value,t=document.getElementById("pcToken").value;if(!u||!t){toast("أدخل عنوان الكمبيوتر ورمز الربط");return}saveBridgeConfig(u,t);document.getElementById("pcDot").className="pc-dot ok";document.getElementById("pcState").innerHTML="تم حفظ إعدادات الربط ✓";toast("تم حفظ اتصال الكمبيوتر ✓")};
+ document.getElementById("pcPush").onclick=function(){saveBridgeConfig(document.getElementById("pcUrl").value,document.getElementById("pcToken").value);openPCBridge("push")};
+ document.getElementById("pcPull").onclick=function(){saveBridgeConfig(document.getElementById("pcUrl").value,document.getElementById("pcToken").value);openPCBridge("pull")};
 }
 function modal(title,fields,fn){
  var m=document.getElementById("modal");m.className="modal";m.innerHTML='<div class="modal-card"><div class="modal-head"><h3>'+title+'</h3><button class="close" id="closeM">×</button></div>'+fields+'<div class="modal-actions"><button class="btn btn-secondary" id="cancelM">إلغاء</button><button class="btn btn-primary" id="saveM">حفظ</button></div></div>';
@@ -646,6 +559,7 @@ function printRepairInvoice(i){
 function go(p){setCurrent(p)}
 function printReport(sales,buy,exp,profit){var w=window.open("","AXinfoReport","width=850,height=700");if(!w){toast("اسمح بالنوافذ المنبثقة للطباعة");return}w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>AXinfo Report</title><style>body{font-family:Arial;padding:30px}.k{font-size:20px;font-weight:bold;margin:12px 0}</style></head><body><h1>'+esc((db.settings&&db.settings.storeName)||"AXinfo")+'</h1><h2>التقرير المالي</h2><p>المبيعات: '+money(sales)+'</p><p>المشتريات: '+money(buy)+'</p><p>المصاريف: '+money(exp)+'</p><p class="k">الربح التقديري: '+money(profit)+'</p><p>التاريخ: '+esc(new Date().toLocaleDateString())+'</p><script>window.onload=function(){window.print()}<\/script></body></html>');w.document.close()}
 function nav(){var b=document.querySelectorAll(".nav-btn"),i;for(i=0;i<b.length;i++)(function(x){x.onclick=function(){setCurrent(x.getAttribute("data-page"))}})(b[i])}
+bindBridgeMessage();
 start();
 })();
 if("serviceWorker" in navigator){window.setTimeout(function(){try{navigator.serviceWorker.register("./sw.js");}catch(e){}},500);}

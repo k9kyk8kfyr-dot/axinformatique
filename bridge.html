@@ -9,29 +9,32 @@ body{margin:0;background:#07111f;color:#f4f7fb;font-family:Segoe UI,Arial,sans-s
 .card{width:min(620px,96vw);background:#0f1727;border:1px solid #263650;border-radius:26px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
 h1{margin:0 0 8px;font-size:28px}p{color:#9fb0c7;line-height:1.7}.qr{width:280px;height:280px;margin:18px auto;background:#fff;border-radius:18px;display:grid;place-items:center;padding:12px;box-sizing:border-box}.qr img{max-width:100%;max-height:100%}.addr{direction:ltr;background:#091321;border:1px solid #34455e;border-radius:12px;padding:12px;word-break:break-all;font-family:monospace}.token{font-family:monospace;word-break:break-all;background:#091321;border:1px solid #34455e;border-radius:12px;padding:10px;color:#a7f3d0}.ok{color:#86efac;font-weight:800}.warn{color:#fcd34d;font-size:12px}.btn{display:inline-block;margin-top:12px;padding:11px 16px;border-radius:12px;background:#2563eb;color:#fff;text-decoration:none;font-weight:800}
 </style>
-
 </head>
 <body>
 <div class="card">
 <h1>🔗 AXinfo PC Bridge</h1>
 <p>امسح رمز QR بكاميرا iPhone. سيقوم AXinfo تلقائيًا بحفظ عنوان هذا الكمبيوتر ورمز الربط.</p>
-<div id="qrcode" class="qr"><span class="warn">جاري إنشاء QR…</span></div>
+<div id="qrcode" class="qr"><img src="/axinfo_pair_qr.svg" alt="AXinfo Pairing QR"></div>
 <div class="ok">🟢 هذا الكمبيوتر لديه رمز ربط خاص به</div>
 <p>عنوان الكمبيوتر</p>
 <div class="addr">__PC_ADDRESS__</div>
 <p>رمز الربط</p>
 <div class="token">__TOKEN__</div>
 <a class="btn" href="__PAIR_URL__">فتح AXinfo وربطه بهذا الكمبيوتر</a>
-<p class="warn">تم توليد QR داخل الكمبيوتر نفسه — لا يحتاج Internet ولا مكتبة خارجية. إذا لم يظهر، أعد تشغيل START_AXinfo_PC.bat ثم حدّث الصفحة.</p>
+<p class="warn">هذا QR يُنشأ محليًا من الكمبيوتر ولا يحتاج Internet. امسحه بكاميرا iPhone العادية.</p>
 </div>
 <script>
 (function(){
- var box=document.getElementById('qrcode');
- var img=document.createElement('img');
- img.alt='AXinfo QR Pairing';
- img.src='/qr.svg?pair='+encodeURIComponent("__TOKEN__")+'&t='+Date.now();
- img.onload=function(){box.innerHTML='';box.appendChild(img);};
- img.onerror=function(){box.innerHTML='<div class="warn">تعذر إنشاء QR. تأكد أن START_AXinfo_PC.bat يعمل ثم أعد تحميل الصفحة.</div>';};
+ var pairUrl="__PAIR_URL__";
+ function make(){
+  var box=document.getElementById('qrcode');
+  try{
+   box.innerHTML='';
+   if(typeof QRCode==='undefined'){box.innerHTML='<div class="warn">QR يحتاج تحميل مكتبة QR. استعمل زر فتح AXinfo أدناه.</div>';return;}
+   new QRCode(box,{text:pairUrl,width:250,height:250,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  }catch(e){box.innerHTML='<div class="warn">تعذر إنشاء QR. استعمل زر فتح AXinfo.</div>';}
+ }
+ make();
 })();
 </script>
 </body>

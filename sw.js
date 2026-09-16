@@ -1,6 +1,6 @@
 const CACHE = "axinfo-v17-2";
 const ASSETS = [
-  "./AXinfo_Ultimate_v17_iPhone.html",
+  "./index.html",
   "./manifest.json",
   "./sw.js",
   "./icon.svg"

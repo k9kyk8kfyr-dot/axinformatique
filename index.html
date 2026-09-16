@@ -46,10 +46,10 @@ html{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bot
 body{-webkit-overflow-scrolling:touch} .content,.main,.panel,.kpi{min-width:0}
 @media (orientation:landscape) and (max-width:900px){.topbar{height:58px}.content{padding-top:12px}.kpis{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:repeat(4,1fr)}}
 @media (min-width:1400px){.content{padding-left:32px;padding-right:32px}.kpi-value{font-size:28px}}
-.pc-bridge{margin-top:14px}.pc-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pc-dot{width:9px;height:9px;border-radius:50%;background:#64748b;display:inline-block}.pc-dot.ok{background:#22c55e}.pc-dot.err{background:#ef4444}.pc-actions{display:flex;gap:8px;flex-wrap:wrap}.pc-actions .btn{flex:1;min-width:150px}
+.pc-bridge{margin-top:14px}.pc-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .pc-status{min-height:24px}.pc-dot{width:9px;height:9px;border-radius:50%;background:#64748b;display:inline-block}.pc-dot.ok{background:#22c55e}.pc-dot.err{background:#ef4444}.pc-actions{display:flex;gap:8px;flex-wrap:wrap}.pc-actions .btn{flex:1;min-width:150px}
 </style>
 </head>
-<body>
+<body><div id="pcGlobalStatus" style="position:fixed;left:12px;bottom:12px;z-index:1200;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #263650;border-radius:14px;background:rgba(15,23,39,.94);color:#f4f7fb;font-weight:800;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);direction:rtl"><span id="pcGlobalDot" style="width:9px;height:9px;border-radius:50%;background:#64748b;display:inline-block"></span><span id="pcGlobalText">الكمبيوتر غير متصل</span></div>
 
 <div id="loginView" class="login">
   <div class="login-card">
@@ -79,7 +79,7 @@ body{-webkit-overflow-scrolling:touch} .content,.main,.panel,.kpi{min-width:0}
     <div class="section-label">SYSTEM</div>
     <button class="nav-btn" data-page="users"><span class="nav-icon">♙</span><span>المستخدمون</span></button>
     <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span>الإعدادات</span></button>
-    <div class="side-bottom"><div class="muted" style="font-size:10px">AXinfo Ultimate v17</div><div class="muted" style="font-size:9px;margin-top:3px">All-in-one local edition</div></div>
+    <div class="side-bottom"><div class="muted" style="font-size:10px">AXinfo Ultimate v21</div><div class="muted" style="font-size:9px;margin-top:3px">All-in-one local edition</div></div>
   </aside>
 
   <div class="main">
@@ -97,7 +97,7 @@ body{-webkit-overflow-scrolling:touch} .content,.main,.panel,.kpi{min-width:0}
 <script>
 (function(){
 var DBKEY="axinfo_v9_db", CREDKEY="axinfo_v9_cred", LANGKEY="axinfo_v9_lang", LOGINKEY="axinfo_v9_login";
-var db,cred,lang,current="dashboard";
+var db,cred,lang,current="dashboard",bridgeMonitorTimer=null,bridgeAutoSyncTimer=null,bridgeOnline=false,bridgeLastOnline=false,bridgeSyncing=false,bridgeDirty=false,bridgeSuppressAuto=false,bridgeLastRevision=0,bridgeLastSavedSerialized="";
 
 function defaults(){return{clients:[],suppliers:[],products:[],sales:[],purchases:[],repairs:[],expenses:[],payments:[],debtsLedger:[],invoices:[],users:[],currency:"DZD",settings:{storeName:"AXinfo"}}}
 function safeGet(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
@@ -112,7 +112,13 @@ function init(){
  safeSet(CREDKEY,JSON.stringify(cred));
  lang=safeGet(LANGKEY)||"ar";
 }
-function save(){safeSet(DBKEY,JSON.stringify(db))}
+function save(){
+ var serialized=JSON.stringify(db);
+ var changed=bridgeLastSavedSerialized!=="" && bridgeLastSavedSerialized!==serialized;
+ safeSet(DBKEY,serialized);
+ bridgeLastSavedSerialized=serialized;
+ if(changed && !bridgeSuppressAuto){ bridgeDirty=true; scheduleAutoSync(); }
+}
 function trLoginError(){return lang==="fr"?"Nom d'utilisateur ou mot de passe incorrect":lang==="en"?"Incorrect username or password":"اسم المستخدم أو كلمة المرور غير صحيحة"}
 function money(n){return Number(n||0).toLocaleString()+" "+(db.currency||"DZD")}
 function esc(s){s=String(s==null?"":s);return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
@@ -410,43 +416,125 @@ function users(c){
  document.getElementById("addHead").onclick=addUser;bindDeleteButtons()
 }
 function bridgeConfig(){
- try{return JSON.parse(safeGet("axinfo_v18_bridge")||"{}")}catch(e){return {}}
+ try{return JSON.parse(safeGet("axinfo_v19_bridge")||safeGet("axinfo_v18_bridge")||"{}")}catch(e){return {}}
 }
-function saveBridgeConfig(url,token){safeSet("axinfo_v18_bridge",JSON.stringify({url:String(url||"").replace(/\/$/,""),token:String(token||"")}))}
+function saveBridgeConfig(url,token){safeSet("axinfo_v19_bridge",JSON.stringify({url:String(url||"").replace(/\/$/,""),token:String(token||"")}))}
 function bridgeUrl(){var c=bridgeConfig();return c.url||""}
-function openPCBridge(mode){
- var c=bridgeConfig();
- if(!c.url||!c.token){toast("أدخل عنوان الكمبيوتر ورمز الربط أولاً");return}
- var target=c.url+"/bridge.html#token="+encodeURIComponent(c.token)+"&mode="+encodeURIComponent(mode||"push");
- var w=window.open(target,"AXinfoPCBridge","width=520,height=760");
- if(!w){toast("اسمح بفتح النوافذ المنبثقة ثم حاول مرة أخرى");return}
- var tries=0;
- var timer=window.setInterval(function(){tries++;try{w.postMessage({type:"AXINFO_READY",mode:mode||"push",token:c.token,data:(mode==="pull"?null:db)},"*")}catch(e){} if(tries>30)window.clearInterval(timer)},300);
- window.setTimeout(function(){window.clearInterval(timer)},10000);
+function setBridgeStatus(ok,text){
+ bridgeOnline=!!ok;
+ var gd=document.getElementById("pcGlobalDot"),gt=document.getElementById("pcGlobalText");
+ if(gd)gd.style.background=ok?"#22c55e":"#ef4444";
+ if(gt)gt.textContent=text|| (ok?"متصل بالكمبيوتر ✓":"غير متصل");
+ var ids=["pcDot","pcDotTop"],i,e;
+ for(i=0;i<ids.length;i++){e=document.getElementById(ids[i]);if(e)e.className="pc-dot"+(ok?" ok":" err")}
+ var labels=["pcState","pcStateTop"],label;
+ for(i=0;i<labels.length;i++){label=document.getElementById(labels[i]);if(label)label.textContent=text|| (ok?"متصل بالكمبيوتر ✓":"غير متصل")}
+ if(ok && !bridgeLastOnline) toast("🟢 الكمبيوتر متصل — AXinfo جاهز للمزامنة ✓");
+ if(!ok && bridgeLastOnline) toast("🔴 انقطع اتصال الكمبيوتر");
+ bridgeLastOnline=ok;
 }
-function bindBridgeMessage(){
- window.addEventListener("message",function(ev){
-  var d=ev.data||{};if(!d||d.type!=="AXINFO_DATA")return;
-  var c=bridgeConfig();if(d.token!==c.token)return;
-  if(d.data&&typeof d.data==="object"){
-   db=d.data;normalizeDB();save();render();toast("تمت مزامنة بيانات الكمبيوتر مع الهاتف ✓");
-  }
+function bridgeFetch(path,options){
+ var c=bridgeConfig();
+ if(!c.url||!c.token)return Promise.reject(new Error("not configured"));
+ var sep=path.indexOf("?")>=0?"&":"?";
+ return fetch(c.url+path+sep+"token="+encodeURIComponent(c.token),options||{}).then(function(r){
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
  });
 }
+function scheduleAutoSync(){
+ if(bridgeAutoSyncTimer!==null)window.clearTimeout(bridgeAutoSyncTimer);
+ bridgeAutoSyncTimer=window.setTimeout(function(){bridgeAutoSyncTimer=null;autoSyncNow()},1200);
+}
+function syncPullSilent(remote){
+ if(!remote||!remote.data)return Promise.resolve(false);
+ bridgeSuppressAuto=true;
+ try{db=remote.data;normalizeDB();safeSet(DBKEY,JSON.stringify(db));bridgeLastSavedSerialized=JSON.stringify(db);bridgeDirty=false;bridgeLastRevision=Number(remote.revision||0);}
+ finally{bridgeSuppressAuto=false}
+ render();
+ return Promise.resolve(true);
+}
+function syncPushSilent(){
+ if(bridgeSyncing)return Promise.resolve(false);
+ bridgeSyncing=true;
+ return bridgeFetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(db)}).then(function(x){
+  if(!x.ok)throw new Error(x.error||"save failed");
+  bridgeDirty=false; bridgeLastRevision=Number(x.revision||bridgeLastRevision);
+  setBridgeStatus(true,"متصل بالكمبيوتر ✓ • مزامنة تلقائية");
+  return true;
+ }).catch(function(){return false}).then(function(v){bridgeSyncing=false;return v});
+}
+function autoSyncNow(){
+ var c=bridgeConfig();
+ if(!c.url||!c.token||bridgeSyncing)return;
+ bridgeFetch("/api/load",{cache:"no-store"}).then(function(remote){
+   if(!remote||!remote.ok)return;
+   var rev=Number(remote.revision||0);
+   if(bridgeDirty){
+      if(rev>bridgeLastRevision){
+         // Both sides changed: keep the local changes and push them as the newest snapshot.
+         return syncPushSilent();
+      }
+      return syncPushSilent();
+   }
+   if(rev>bridgeLastRevision && remote.data){return syncPullSilent(remote).then(function(){toast("🔄 تمت مزامنة البيانات تلقائيًا ✓")});}
+   bridgeLastRevision=Math.max(bridgeLastRevision,rev);
+ }).catch(function(){});
+}
+function startAutoSync(){
+ if(bridgeMonitorTimer===null){
+   checkBridge();
+   bridgeMonitorTimer=window.setInterval(checkBridge,5000);
+ }
+ if(bridgeAutoSyncTimer===null){
+   bridgeAutoSyncTimer=window.setInterval(autoSyncNow,4000);
+ }
+ autoSyncNow();
+}
+function checkBridge(){
+ var c=bridgeConfig();
+ if(!c.url||!c.token){setBridgeStatus(false,"غير متصل — لم يتم حفظ الربط");return Promise.resolve(false)}
+ return bridgeFetch("/api/status",{cache:"no-store"}).then(function(x){
+  if(!x||!x.ok)throw new Error("offline");
+  setBridgeStatus(true,"متصل بالكمبيوتر ✓");
+  bridgeLastRevision=Math.max(bridgeLastRevision,Number(x.revision||0));
+  return true;
+ }).catch(function(){setBridgeStatus(false,"غير متصل — تأكد أن PC Bridge يعمل");return false});
+}
+function startBridgeMonitor(){
+ startAutoSync();
+}
+function syncPush(){
+ return bridgeFetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(db)}).then(function(x){if(!x.ok)throw new Error(x.error||"save failed");setBridgeStatus(true,"متصل بالكمبيوتر ✓");toast("📤 تم إرسال بيانات الهاتف إلى الكمبيوتر ✓");return x});
+}
+function syncPull(){
+ return bridgeFetch("/api/load",{cache:"no-store"}).then(function(x){
+  if(!x.ok)throw new Error(x.error||"load failed");
+  if(!x.data){toast("لا توجد بيانات محفوظة على الكمبيوتر");return false}
+  db=x.data;normalizeDB();save();render();toast("📥 تم جلب بيانات الكمبيوتر إلى الهاتف ✓");return true;
+ });
+}
+function openPCBridge(mode){
+ if(mode==="pull")return syncPull().catch(function(e){toast("تعذر جلب البيانات: "+(e.message||"تحقق من الاتصال"));setBridgeStatus(false,"غير متصل")});
+ return syncPush().catch(function(e){toast("تعذر إرسال البيانات: "+(e.message||"تحقق من الاتصال"));setBridgeStatus(false,"غير متصل")});
+}
+function bindBridgeMessage(){startBridgeMonitor()}
 function settings(c){
  var bc=bridgeConfig();
  c.innerHTML=header("الإعدادات","الحساب والعملة والنسخ الاحتياطي","نسخ احتياطي","backupBtn");
  c.innerHTML+='<div class="layout2"><div class="panel"><div class="panel-head"><h3>بيانات الدخول</h3></div><div class="panel-body"><div class="field"><label>اسم المستخدم الجديد</label><input id="nu" class="input"></div><div class="field"><label>كلمة المرور الجديدة</label><input id="np" class="input" type="password"></div><button class="btn btn-primary" id="saveCred">حفظ التغييرات</button></div></div><div class="panel"><div class="panel-head"><h3>العملة</h3></div><div class="panel-body"><div class="field"><label>رمز العملة</label><input id="currency" class="input" value="'+esc(db.currency)+'"></div><button class="btn btn-primary" id="saveCur">حفظ العملة</button></div></div></div>';
- c.innerHTML+='<div class="panel pc-bridge"><div class="panel-head"><h3>🔗 ربط الهاتف مع الكمبيوتر</h3><span class="muted">Wi‑Fi محلي</span></div><div class="panel-body"><p class="muted" style="font-size:11px">شغّل AXinfo PC Bridge على الكمبيوتر، ثم ضع العنوان والرمز هنا. الهاتف والكمبيوتر لازم يكونا على نفس Wi‑Fi.</p><div class="form-grid"><div class="field"><label>عنوان الكمبيوتر</label><input id="pcUrl" class="input" placeholder="http://192.168.1.20:8765" value="'+esc(bc.url||"")+'"></div><div class="field"><label>رمز الربط</label><input id="pcToken" class="input" type="password" placeholder="الرمز من الكمبيوتر" value="'+esc(bc.token||"")+'"></div></div><div class="pc-status"><span id="pcDot" class="pc-dot"></span><span id="pcState" class="muted">غير متصل</span></div><div class="pc-actions" style="margin-top:10px"><button type="button" class="btn btn-secondary" id="pcSave">حفظ الاتصال</button><button type="button" class="btn btn-primary" id="pcPush">📤 إرسال الهاتف → PC</button><button type="button" class="btn btn-success" id="pcPull">📥 جلب PC → الهاتف</button></div></div></div>';
+ c.innerHTML+='<div class="panel pc-bridge"><div class="panel-head"><h3>🔗 ربط الهاتف مع الكمبيوتر</h3><span class="muted">Offline + Wi‑Fi</span></div><div class="panel-body"><p class="muted" style="font-size:11px">احفظ عنوان الكمبيوتر والرمز مرة واحدة. سيبقى الربط محفوظًا حتى عند الانتقال بين أقسام AXinfo، مع اتصال تلقائي ومزامنة ثنائية الاتجاه كل 4 ثوانٍ عند توفر الشبكة المحلية.</p><div class="form-grid"><div class="field"><label>عنوان الكمبيوتر</label><input id="pcUrl" class="input" placeholder="http://192.168.1.20:8765" value="'+esc(bc.url||"")+'"></div><div class="field"><label>رمز الربط</label><input id="pcToken" class="input" type="password" placeholder="الرمز من الكمبيوتر" value="'+esc(bc.token||"")+'"></div></div><div class="pc-status"><span id="pcDot" class="pc-dot"></span><span id="pcState" class="muted">جاري فحص الاتصال...</span></div><div class="pc-actions" style="margin-top:10px"><button type="button" class="btn btn-secondary" id="pcSave">💾 حفظ الاتصال</button><button type="button" class="btn btn-primary" id="pcPush">📤 إرسال الآن</button><button type="button" class="btn btn-success" id="pcPull">📥 جلب الآن</button><button type="button" class="btn btn-secondary" id="pcMode">🖥️ فتح وضع الكمبيوتر</button></div><p class="muted" style="margin-top:10px;font-size:11px">ملاحظة: التشغيل Offline لا يحتاج Internet. بعد حفظ الاتصال، تنتقل التغييرات تلقائيًا بين الهاتف والكمبيوتر عند توفر الاتصال المحلي. الأزرار اليدوية تبقى متاحة للمزامنة الفورية.</p></div></div>';
  c.innerHTML+='<div class="panel" style="margin-top:14px"><div class="panel-head"><h3>النسخ والاسترجاع</h3></div><div class="panel-body"><input type="file" id="restoreFile" accept=".json"><br><br><button class="btn btn-secondary" id="restoreBtn">استرجاع</button> <button class="btn btn-danger" id="clearBtn">مسح كل البيانات</button></div></div>';
  document.getElementById("backupBtn").onclick=backup;
  document.getElementById("saveCred").onclick=function(){var u=document.getElementById("nu").value,p=document.getElementById("np").value;if(!u||!p){toast("أدخل اسم المستخدم وكلمة المرور");return}cred={u:u,p:p};safeSet(CREDKEY,JSON.stringify(cred));toast("تم تغيير بيانات الدخول ✓")};
  document.getElementById("saveCur").onclick=function(){db.currency=document.getElementById("currency").value||"DZD";save();render();toast("تم حفظ العملة ✓")};
  document.getElementById("restoreBtn").onclick=restore;
  document.getElementById("clearBtn").onclick=function(){if(window.confirm("سيتم حذف بيانات AXinfo المحلية. هل تريد المتابعة؟")){db=defaults();save();render();toast("تم المسح")}};
- document.getElementById("pcSave").onclick=function(){var u=document.getElementById("pcUrl").value,t=document.getElementById("pcToken").value;if(!u||!t){toast("أدخل عنوان الكمبيوتر ورمز الربط");return}saveBridgeConfig(u,t);document.getElementById("pcDot").className="pc-dot ok";document.getElementById("pcState").innerHTML="تم حفظ إعدادات الربط ✓";toast("تم حفظ اتصال الكمبيوتر ✓")};
+ document.getElementById("pcSave").onclick=function(){var u=document.getElementById("pcUrl").value,t=document.getElementById("pcToken").value;if(!u||!t){toast("أدخل عنوان الكمبيوتر ورمز الربط");return}saveBridgeConfig(u,t);bridgeLastRevision=0;toast("💾 تم حفظ الاتصال — المزامنة التلقائية مفعلة ✓");startBridgeMonitor()};
  document.getElementById("pcPush").onclick=function(){saveBridgeConfig(document.getElementById("pcUrl").value,document.getElementById("pcToken").value);openPCBridge("push")};
  document.getElementById("pcPull").onclick=function(){saveBridgeConfig(document.getElementById("pcUrl").value,document.getElementById("pcToken").value);openPCBridge("pull")};
+ document.getElementById("pcMode").onclick=function(){var u=document.getElementById("pcUrl").value;if(!u){toast("أدخل عنوان الكمبيوتر أولاً");return}window.location.href=u+"/index.html"};
+ startBridgeMonitor();
 }
 function modal(title,fields,fn){
  var m=document.getElementById("modal");m.className="modal";m.innerHTML='<div class="modal-card"><div class="modal-head"><h3>'+title+'</h3><button class="close" id="closeM">×</button></div>'+fields+'<div class="modal-actions"><button class="btn btn-secondary" id="cancelM">إلغاء</button><button class="btn btn-primary" id="saveM">حفظ</button></div></div>';

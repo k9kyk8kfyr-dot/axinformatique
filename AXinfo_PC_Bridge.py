@@ -13,6 +13,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PORT = 8765
 TOKEN_FILE = os.path.join(ROOT, "axinfo_pc_token.txt")
 DATA_FILE = os.path.join(ROOT, "AXinfo_PC_Data.json")
+LAST_SEEN_FILE = os.path.join(ROOT, "AXinfo_PC_LastSeen.txt")
+REVISION_FILE = os.path.join(ROOT, "AXinfo_PC_Revision.txt")
 
 
 def make_token():
@@ -37,6 +39,24 @@ def load_or_create_token():
 
 
 TOKEN = load_or_create_token()
+
+
+def current_revision():
+    try:
+        with open(REVISION_FILE, "r", encoding="utf-8") as fh:
+            return int(fh.read().strip() or "0")
+    except Exception:
+        return 0
+
+def bump_revision():
+    value = current_revision() + 1
+    try:
+        with open(REVISION_FILE, "w", encoding="utf-8") as fh:
+            fh.write(str(value))
+    except Exception:
+        pass
+    return value
+
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -74,7 +94,23 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
 
         if path == "/api/status":
-            self._json(200, {"ok": True, "hasData": os.path.exists(DATA_FILE)})
+            # Status endpoint is intentionally token-protected for the app's persistent heartbeat.
+            if self._token() != TOKEN:
+                self._json(403, {"ok": False, "error": "invalid token"})
+                return
+            try:
+                with open(LAST_SEEN_FILE, "w", encoding="utf-8") as fh:
+                    fh.write(str(__import__("time").time()))
+            except Exception:
+                pass
+            self._json(200, {"ok": True, "hasData": os.path.exists(DATA_FILE), "revision": current_revision(), "updatedAt": os.path.getmtime(DATA_FILE) if os.path.exists(DATA_FILE) else 0})
+            return
+
+        if path == "/api/info":
+            if self._token() != TOKEN:
+                self._json(403, {"ok": False, "error": "invalid token"})
+                return
+            self._json(200, {"ok": True, "name": "AXinfo PC Bridge", "version": "v20", "sync": "local"})
             return
 
         if path == "/api/load":
@@ -87,7 +123,7 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 with open(DATA_FILE, "r", encoding="utf-8") as fh:
                     data = json.load(fh)
-                self._json(200, {"ok": True, "data": data})
+                self._json(200, {"ok": True, "data": data, "revision": current_revision(), "updatedAt": os.path.getmtime(DATA_FILE) if os.path.exists(DATA_FILE) else 0})
             except Exception as exc:
                 self._json(500, {"ok": False, "error": str(exc)})
             return
@@ -112,7 +148,8 @@ class Handler(SimpleHTTPRequestHandler):
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(data, fh, ensure_ascii=False, indent=2)
             os.replace(tmp, DATA_FILE)
-            self._json(200, {"ok": True})
+            revision = bump_revision()
+            self._json(200, {"ok": True, "revision": revision, "updatedAt": os.path.getmtime(DATA_FILE)})
         except Exception as exc:
             self._json(400, {"ok": False, "error": str(exc)})
 
@@ -141,7 +178,7 @@ def main():
     os.chdir(ROOT)
     ip = local_ip()
     print("=" * 58)
-    print("AXinfo PC Bridge v19 - OFFLINE / Wi-Fi")
+    print("AXinfo PC Bridge v21 - AUTO SYNC / OFFLINE")
     print("=" * 58)
     print("PC address: http://" + ip + ":" + str(PORT))
     print("Pairing token: " + TOKEN)

@@ -110,7 +110,7 @@ class Handler(SimpleHTTPRequestHandler):
             if self._token() != TOKEN:
                 self._json(403, {"ok": False, "error": "invalid token"})
                 return
-            self._json(200, {"ok": True, "name": "AXinfo PC Bridge", "version": "v20", "sync": "local"})
+            self._json(200, {"ok": True, "name": "AXinfo PC Bridge", "version": "v22", "sync": "local"})
             return
 
         if path == "/api/load":
@@ -178,7 +178,7 @@ def main():
     os.chdir(ROOT)
     ip = local_ip()
     print("=" * 58)
-    print("AXinfo PC Bridge v21 - AUTO SYNC / OFFLINE")
+    print("AXinfo PC Bridge v22 - AUTO SYNC / OFFLINE")
     print("=" * 58)
     print("PC address: http://" + ip + ":" + str(PORT))
     print("Pairing token: " + TOKEN)

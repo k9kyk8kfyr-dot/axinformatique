@@ -1,18 +1,12 @@
 {
-  "name": "AXinfo Ultimate v22",
-  "short_name": "AXinfo",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#07111f",
-  "theme_color": "#07111f",
-  "orientation": "any",
-  "icons": [
-    {
-      "src": "./icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+  "name":"AXinfo Ultimate v25 Smart Pro",
+  "short_name":"AXinfo",
+  "start_url":"./index.html",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#070b13",
+  "theme_color":"#07111f",
+  "lang":"ar",
+  "dir":"rtl",
+  "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }

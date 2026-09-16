@@ -1,1 +1,42 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AXinfo PC Bridge</title><style>body{font-family:Segoe UI,Arial;background:#070b13;color:#f4f7fb;margin:0;padding:24px}.card{max-width:650px;margin:auto;background:#0f1727;border:1px solid #263650;border-radius:20px;padding:22px}.ok{color:#86efac}.muted{color:#8ea0b8}.code{word-break:break-all;background:#091321;padding:12px;border-radius:10px;border:1px solid #34455e;margin:8px 0}.btn{padding:12px 15px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;margin:5px}.danger{background:#451e27}</style></head><body><div class="card"><h1>AXinfo PC Bridge</h1><p class="muted">هذه الصفحة تربط AXinfo في الهاتف مع بيانات الكمبيوتر عبر نفس شبكة Wi‑Fi.</p><h3>الحالة</h3><p id="state">في انتظار AXinfo...</p><div id="info"></div><button class="btn" id="save">💾 حفظ البيانات المرسلة</button><button class="btn" id="load">📥 إرسال بيانات الكمبيوتر للهاتف</button><button class="btn danger" id="clear">مسح بيانات الكمبيوتر</button></div><script>(function(){var token=(location.hash.match(/token=([^&]+)/)||[])[1]||"";try{token=decodeURIComponent(token)}catch(e){}var state=document.getElementById("state"),info=document.getElementById("info"),incoming=null;function show(s){state.textContent=s}window.addEventListener("message",function(ev){var d=ev.data||{};if(d.type!=="AXINFO_READY")return;if(d.token!==token){show("رمز الربط غير صحيح");return}incoming=d.data;show(d.mode==="pull"?"تم الاتصال — اضغط جلب لإرسال بيانات الكمبيوتر للهاتف":"تم استلام بيانات الهاتف — اضغط حفظ");info.innerHTML=d.data?"<p class='ok'>✓ بيانات الهاتف وصلت</p>":"";});document.getElementById("save").onclick=function(){if(!incoming){show("لم تصل بيانات من الهاتف بعد");return}fetch("/api/save?token="+encodeURIComponent(token),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(incoming)}).then(function(r){return r.json()}).then(function(x){show(x.ok?"تم حفظ بيانات الهاتف على الكمبيوتر ✓":"فشل الحفظ: "+x.error)}).catch(function(e){show("خطأ في الاتصال")})};document.getElementById("load").onclick=function(){fetch("/api/load?token="+encodeURIComponent(token)).then(function(r){return r.json()}).then(function(x){if(!x.data){show("لا توجد بيانات محفوظة على الكمبيوتر");return}if(window.opener)window.opener.postMessage({type:"AXINFO_DATA",token:token,data:x.data},"*");show("تم إرسال البيانات للهاتف ✓")}).catch(function(){show("تعذر جلب البيانات")})};document.getElementById("clear").onclick=function(){if(!confirm("مسح نسخة الكمبيوتر؟"))return;fetch("/api/save?token="+encodeURIComponent(token),{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}).then(function(){show("تم المسح")})};})();</script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AXinfo — ربط الكمبيوتر</title>
+<style>
+body{margin:0;background:#07111f;color:#f4f7fb;font-family:Segoe UI,Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+.card{width:min(620px,96vw);background:#0f1727;border:1px solid #263650;border-radius:26px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+h1{margin:0 0 8px;font-size:28px}p{color:#9fb0c7;line-height:1.7}.qr{width:280px;height:280px;margin:18px auto;background:#fff;border-radius:18px;display:grid;place-items:center;padding:12px;box-sizing:border-box}.qr img{max-width:100%;max-height:100%}.addr{direction:ltr;background:#091321;border:1px solid #34455e;border-radius:12px;padding:12px;word-break:break-all;font-family:monospace}.token{font-family:monospace;word-break:break-all;background:#091321;border:1px solid #34455e;border-radius:12px;padding:10px;color:#a7f3d0}.ok{color:#86efac;font-weight:800}.warn{color:#fcd34d;font-size:12px}.btn{display:inline-block;margin-top:12px;padding:11px 16px;border-radius:12px;background:#2563eb;color:#fff;text-decoration:none;font-weight:800}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="card">
+<h1>🔗 AXinfo PC Bridge</h1>
+<p>امسح رمز QR بكاميرا iPhone. سيقوم AXinfo تلقائيًا بحفظ عنوان هذا الكمبيوتر ورمز الربط.</p>
+<div id="qrcode" class="qr"><span class="warn">جاري إنشاء QR…</span></div>
+<div class="ok">🟢 هذا الكمبيوتر لديه رمز ربط خاص به</div>
+<p>عنوان الكمبيوتر</p>
+<div class="addr">__PC_ADDRESS__</div>
+<p>رمز الربط</p>
+<div class="token">__TOKEN__</div>
+<a class="btn" href="__PAIR_URL__">فتح AXinfo وربطه بهذا الكمبيوتر</a>
+<p class="warn">إذا لم يظهر QR بسبب عدم وجود Internet، استعمل زر فتح AXinfo أو أدخل العنوان والرمز يدويًا. المزامنة نفسها لا تحتاج Internet.</p>
+</div>
+<script>
+(function(){
+ var pairUrl="__PAIR_URL__";
+ function make(){
+  var box=document.getElementById('qrcode');
+  try{
+   box.innerHTML='';
+   if(typeof QRCode==='undefined'){box.innerHTML='<div class="warn">QR يحتاج تحميل مكتبة QR. استعمل زر فتح AXinfo أدناه.</div>';return;}
+   new QRCode(box,{text:pairUrl,width:250,height:250,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  }catch(e){box.innerHTML='<div class="warn">تعذر إنشاء QR. استعمل زر فتح AXinfo.</div>';}
+ }
+ make();
+})();
+</script>
+</body>
+</html>

@@ -79,7 +79,13 @@ class Handler(SimpleHTTPRequestHandler):
     def _token(self):
         try:
             q = parse_qs(urlparse(self.path).query)
-            return q.get("token", [""])[0]
+            value = q.get("token", [""])[0]
+            if value:
+                return value
+        except Exception:
+            pass
+        try:
+            return self.headers.get("X-AXinfo-Token", "")
         except Exception:
             return ""
 
@@ -92,6 +98,27 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
+
+        if path == "/api/pairinfo":
+            # Pairing information is intentionally available only on the local bridge page.
+            self._json(200, {"ok": True, "address": "http://" + local_ip() + ":" + str(PORT), "token": TOKEN, "pairUrl": "http://" + local_ip() + ":" + str(PORT) + "/index.html?pair=" + TOKEN})
+            return
+
+        if path == "/bridge.html":
+            try:
+                with open(os.path.join(ROOT, "bridge.html"), "r", encoding="utf-8") as fh:
+                    html = fh.read()
+                pair_url = "http://" + local_ip() + ":" + str(PORT) + "/index.html?pair=" + TOKEN
+                html = html.replace("__PAIR_URL__", pair_url).replace("__TOKEN__", TOKEN).replace("__PC_ADDRESS__", "http://" + local_ip() + ":" + str(PORT))
+                raw = html.encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+            except Exception as exc:
+                self._json(500, {"ok": False, "error": str(exc)})
+            return
 
         if path == "/api/status":
             # Status endpoint is intentionally token-protected for the app's persistent heartbeat.
@@ -178,11 +205,12 @@ def main():
     os.chdir(ROOT)
     ip = local_ip()
     print("=" * 58)
-    print("AXinfo PC Bridge v22 - AUTO SYNC / OFFLINE")
+    print("AXinfo PC Bridge v23 - AUTO SYNC / OFFLINE")
     print("=" * 58)
     print("PC address: http://" + ip + ":" + str(PORT))
     print("Pairing token: " + TOKEN)
     print("")
+    print("Pairing / QR page: http://" + ip + ":" + str(PORT) + "/bridge.html")
     print("Test on this PC: http://127.0.0.1:" + str(PORT) + "/bridge.html")
     print("Keep this window open while syncing.")
     print("Phone and PC can work offline; Wi-Fi is only needed for live sync.")
